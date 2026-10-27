@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships         FamilyMember[]
+  clothing            ClothingItem[]
+  sentInvitations     FamilyInvitation[] @relation("InvitationInviter")
+  receivedInvitations FamilyInvitation[] @relation("InvitationRecipient")
+}
+
+model Family {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members     FamilyMember[]
+  clothing    ClothingItem[]
+  invitations FamilyInvitation[]
+}
+
+model FamilyMember {
+  id        String   @id @default(uuid())
+  userId    String
+  familyId  String
+  role      String   @default("MEMBER")
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, familyId])
+  @@index([familyId])
+  @@index([userId])
+}
+
+model FamilyInvitation {
+  id          String    @id @default(uuid())
+  familyId    String
+  inviterId   String
+  recipientId String?
+  tokenHash   String    @unique
+  status      String    @default("PENDING")
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  family    Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  inviter   User   @relation("InvitationInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  recipient User?  @relation("InvitationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, status])
+  @@index([recipientId, status])
+  @@index([expiresAt])
+}
+
+model ClothingItem {
+  id        String   @id @default(uuid())
+  familyId  String?
+  ownerId   String
+  name      String
+  category  String
+  color     String?
+  occasion  String?
+  imageUrl  String?
+  favorite  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  owner  User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos ClothingPhoto[]
+
+  @@index([familyId])
+  @@index([ownerId])
+  @@index([category])
+}
+
+model ClothingPhoto {
+  id             String   @id @default(uuid())
+  clothingItemId String
+  imageUrl       String
+  storageKey     String?
+  createdAt      DateTime @default(now())
+
+  clothingItem ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+
+  @@index([clothingItemId])
+}
