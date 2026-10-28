@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   Shirt,
@@ -5,10 +6,7 @@ import {
   Heart,
   Sparkles,
   Settings,
-  UsersRound,
-  Plus,
   X,
-  Crown,
   ChevronRight,
 } from "lucide-react";
 
@@ -55,9 +53,12 @@ export default function Sidebar({
 
       <aside
         className={`fixed inset-y-0 left-0 z-[80] flex h-dvh w-[270px] flex-col overflow-y-auto border-r border-[#EEEBF3] bg-white px-[18px] py-6 transition-transform duration-200 lg:w-[260px] lg:translate-x-0 ${
-          isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+          isOpen
+            ? "translate-x-0 shadow-2xl"
+            : "-translate-x-full"
         }`}
       >
+        {/* Logo */}
         <div className="flex items-center gap-3 px-1">
           <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#7553C9] text-white shadow-lg shadow-violet-200">
             <Shirt size={24} />
@@ -65,8 +66,9 @@ export default function Sidebar({
 
           <div>
             <h1 className="text-[23px] font-extrabold leading-tight tracking-[-1.2px] text-[#302743]">
-              wardrobe<span className="text-[#8C69DF]">.</span>
+              wardrobe<span className="text-[#8C69DF">.</span>
             </h1>
+
             <p className="mt-1 text-[9px] font-bold tracking-[1.4px] text-[#A09AAC]">
               YOUR PERSONAL SPACE
             </p>
@@ -82,6 +84,7 @@ export default function Sidebar({
           </button>
         </div>
 
+        {/* Personal Wardrobe */}
         <button
           type="button"
           onClick={() => navigate("Dashboard")}
@@ -95,6 +98,7 @@ export default function Sidebar({
             <p className="text-[9px] font-extrabold tracking-widest text-[#968DA9]">
               YOUR SPACE
             </p>
+
             <p className="mt-1 text-[13px] font-bold text-[#393047]">
               My Wardrobe
             </p>
@@ -103,6 +107,7 @@ export default function Sidebar({
           <ChevronRight size={17} className="text-[#9187A5]" />
         </button>
 
+        {/* Navigation */}
         <nav className="mt-8 flex flex-col gap-7">
           {navigationGroups.map((group) => (
             <div key={group.title}>
@@ -136,40 +141,20 @@ export default function Sidebar({
           ))}
         </nav>
 
+        {/* Empty flexible space */}
         <div className="flex-1" />
 
-        <div className="mt-8 rounded-[17px] border border-[#EAE1FC] bg-gradient-to-br from-[#F8F4FF] via-[#F8F4FF] to-[#E9DFFF] p-4">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#E9DFFF] text-[#7553C9]">
-            <UsersRound size={24} />
-          </div>
-
-          <h3 className="mt-4 text-sm font-bold text-[#392B53]">
-            Style is better together.
-          </h3>
-
-          <p className="mt-2 text-[11px] leading-relaxed text-[#887B9E]">
-            Bring your family together and organize everyone's wardrobe.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => navigate("Family")}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7553C9] px-3 py-3 text-[11px] font-bold text-white transition hover:bg-[#6342B3]"
-          >
-            <Plus size={16} />
-            Create family space
-          </button>
-        </div>
-
-        <div className="mt-5 flex items-center gap-3 border-t border-[#F0EDF4] pt-4">
+        {/* Personal wardrobe footer */}
+        <div className="mt-8 flex items-center gap-3 border-t border-[#F0EDF4] pt-4">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#F7F0DD] text-[#B18B3C]">
-            <Crown size={18} />
+            <Shirt size={18} />
           </div>
 
           <div>
             <p className="text-[11px] font-bold text-[#514761]">
               Your wardrobe
             </p>
+
             <p className="mt-1 text-[10px] text-[#9C95A8]">
               Made for everyday life
             </p>

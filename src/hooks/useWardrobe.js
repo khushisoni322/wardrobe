@@ -1,5 +1,6 @@
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { clothingAPI, familyAPI } from "../lib/api";
+import { clothingAPI } from "../lib/api";
 
 export const DEFAULT_CATEGORIES = [
   "Tops",
@@ -15,77 +16,46 @@ export const DEFAULT_CATEGORIES = [
 ];
 
 export default function useWardrobe() {
-  const [families, setFamilies] = useState([]);
-  const [activeFamilyId, setActiveFamilyId] = useState("");
   const [clothes, setClothes] = useState([]);
 
-  const [familiesLoading, setFamiliesLoading] = useState(true);
-  const [clothesLoading, setClothesLoading] = useState(false);
-
+  const [clothesLoading, setClothesLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadFamilies = useCallback(async () => {
-    setFamiliesLoading(true);
-    setError("");
-
-    try {
-      const result = await familyAPI.list();
-      const nextFamilies = Array.isArray(result?.families)
-        ? result.families
-        : [];
-
-      setFamilies(nextFamilies);
-
-      if (nextFamilies.length > 0) {
-        setActiveFamilyId((current) => {
-          const stillExists = nextFamilies.some(
-            (family) => family.id === current
-          );
-
-          return stillExists ? current : nextFamilies[0].id;
-        });
-      } else {
-        setActiveFamilyId("");
-      }
-    } catch (err) {
-      setError(err.message || "Could not load your families.");
-    } finally {
-      setFamiliesLoading(false);
-    }
-  }, []);
+  // ========================================
+  // LOAD PERSONAL WARDROBE
+  // ========================================
 
   const loadClothes = useCallback(async () => {
-    if (!activeFamilyId) {
-      setClothes([]);
-      return;
-    }
-
     setClothesLoading(true);
     setError("");
 
     try {
-      const result = await clothingAPI.list(activeFamilyId);
-      setClothes(Array.isArray(result?.clothes) ? result.clothes : []);
+      const result = await clothingAPI.listMine();
+
+      setClothes(
+        Array.isArray(result?.clothes)
+          ? result.clothes
+          : []
+      );
     } catch (err) {
-      setError(err.message || "Could not load your clothes.");
+      setError(
+        err.message || "Could not load your clothes."
+      );
+
       setClothes([]);
     } finally {
       setClothesLoading(false);
     }
-  }, [activeFamilyId]);
+  }, []);
 
-  useEffect(() => {
-    loadFamilies();
-  }, [loadFamilies]);
-
+  // Load personal wardrobe when hook mounts.
   useEffect(() => {
     loadClothes();
   }, [loadClothes]);
 
-  const activeFamily = useMemo(
-    () => families.find((family) => family.id === activeFamilyId) || null,
-    [families, activeFamilyId]
-  );
+  // ========================================
+  // CATEGORIES
+  // ========================================
 
   const categories = useMemo(() => {
     const dynamicCategories = clothes
@@ -93,76 +63,147 @@ export default function useWardrobe() {
       .filter(Boolean);
 
     return Array.from(
-      new Set([...DEFAULT_CATEGORIES, ...dynamicCategories])
+      new Set([
+        ...DEFAULT_CATEGORIES,
+        ...dynamicCategories,
+      ])
     );
   }, [clothes]);
 
+  // ========================================
+  // ADD CLOTHING
+  // ========================================
+
   const createClothing = async (data) => {
-    if (!activeFamilyId) {
-      throw new Error("Please create or select a family first.");
+    setError("");
+
+    try {
+      const result = await clothingAPI.createMine(data);
+
+      if (!result?.clothing) {
+        throw new Error(
+          result?.message || "Clothing could not be added."
+        );
+      }
+
+      setClothes((current) => [
+        result.clothing,
+        ...current,
+      ]);
+
+      return result.clothing;
+    } catch (err) {
+      setError(
+        err.message || "Could not add clothing."
+      );
+
+      throw err;
     }
-
-    const result = await clothingAPI.create(activeFamilyId, data);
-
-    if (result?.clothing) {
-      setClothes((current) => [result.clothing, ...current]);
-    }
-
-    return result?.clothing;
   };
+
+  // ========================================
+  // UPDATE CLOTHING
+  // ========================================
 
   const updateClothing = async (id, updates) => {
-    const result = await clothingAPI.update(id, updates);
+    setError("");
 
-    if (result?.clothing) {
+    try {
+      const result = await clothingAPI.update(id, updates);
+
+      if (!result?.clothing) {
+        throw new Error(
+          result?.message || "Clothing could not be updated."
+        );
+      }
+
       setClothes((current) =>
         current.map((item) =>
-          item.id === id ? result.clothing : item
+          item.id === id
+            ? result.clothing
+            : item
         )
       );
-    }
 
-    return result?.clothing;
+      return result.clothing;
+    } catch (err) {
+      setError(
+        err.message || "Could not update clothing."
+      );
+
+      throw err;
+    }
   };
+
+  // ========================================
+  // DELETE CLOTHING
+  // ========================================
 
   const deleteClothing = async (id) => {
-    await clothingAPI.delete(id);
+    setError("");
 
-    setClothes((current) =>
-      current.filter((item) => item.id !== id)
-    );
+    try {
+      await clothingAPI.delete(id);
+
+      setClothes((current) =>
+        current.filter((item) => item.id !== id)
+      );
+    } catch (err) {
+      setError(
+        err.message || "Could not delete clothing."
+      );
+
+      throw err;
+    }
   };
+
+  // ========================================
+  // TOGGLE FAVORITE
+  // ========================================
 
   const toggleFavorite = async (id) => {
-    const result = await clothingAPI.toggleFavorite(id);
+    setError("");
 
-    if (result?.clothing) {
+    try {
+      const result = await clothingAPI.toggleFavorite(id);
+
+      if (!result?.clothing) {
+        throw new Error(
+          result?.message || "Favorite could not be updated."
+        );
+      }
+
       setClothes((current) =>
         current.map((item) =>
-          item.id === id ? result.clothing : item
+          item.id === id
+            ? result.clothing
+            : item
         )
       );
-    }
 
-    return result?.clothing;
+      return result.clothing;
+    } catch (err) {
+      setError(
+        err.message || "Could not update favorite."
+      );
+
+      throw err;
+    }
   };
 
-  return {
-    families,
-    activeFamily,
-    activeFamilyId,
-    setActiveFamilyId,
+  // ========================================
+  // RETURN PERSONAL WARDROBE
+  // ========================================
 
+  return {
     clothes,
     categories,
 
-    familiesLoading,
+    loading: clothesLoading,
     clothesLoading,
-    loading: familiesLoading || clothesLoading,
 
     error,
 
-    reloadFamilies: loadFamilies,
     reloadClothes: loadClothes,
 
     createClothing,

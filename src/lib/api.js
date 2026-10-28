@@ -1,22 +1,27 @@
+
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:5001/api";
 
-// Read the login token saved in this browser.
+// ========================================
+// AUTH TOKEN
+// ========================================
+
 export function getToken() {
   return localStorage.getItem("wardrobe-token");
 }
 
-// Save the token after successful login or registration.
 export function saveToken(token) {
   localStorage.setItem("wardrobe-token", token);
 }
 
-// Remove the token during logout.
 export function clearToken() {
   localStorage.removeItem("wardrobe-token");
 }
 
-// Reusable API request function.
+// ========================================
+// API REQUEST
+// ========================================
+
 async function apiRequest(path, options = {}) {
   const token = getToken();
 
@@ -105,53 +110,24 @@ export const authAPI = {
 };
 
 // ========================================
-// FAMILIES
-// ========================================
-
-export const familyAPI = {
-  list() {
-    return apiRequest("/families");
-  },
-
-  create(name) {
-    return apiRequest("/families", {
-      method: "POST",
-      body: JSON.stringify({ name }),
-    });
-  },
-
-  invite(familyId, email) {
-    return apiRequest(
-      `/families/${encodeURIComponent(familyId)}/invitations`,
-      {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      }
-    );
-  },
-};
-
-// ========================================
-// CLOTHING
+// PERSONAL CLOTHING
 // ========================================
 
 export const clothingAPI = {
-  list(familyId) {
-    return apiRequest(
-      `/families/${encodeURIComponent(familyId)}/clothes`
-    );
+  // Get logged-in user's personal wardrobe.
+  listMine() {
+    return apiRequest("/clothes");
   },
 
-  create(familyId, clothing) {
-    return apiRequest(
-      `/families/${encodeURIComponent(familyId)}/clothes`,
-      {
-        method: "POST",
-        body: JSON.stringify(clothing),
-      }
-    );
+  // Add clothing to logged-in user's personal wardrobe.
+  createMine(clothing) {
+    return apiRequest("/clothes", {
+      method: "POST",
+      body: JSON.stringify(clothing),
+    });
   },
 
+  // Update clothing.
   update(clothingId, updates) {
     return apiRequest(
       `/clothes/${encodeURIComponent(clothingId)}`,
@@ -162,6 +138,7 @@ export const clothingAPI = {
     );
   },
 
+  // Delete clothing.
   delete(clothingId) {
     return apiRequest(
       `/clothes/${encodeURIComponent(clothingId)}`,
@@ -171,6 +148,7 @@ export const clothingAPI = {
     );
   },
 
+  // Toggle favorite.
   toggleFavorite(clothingId) {
     return apiRequest(
       `/clothes/${encodeURIComponent(clothingId)}/favorite`,

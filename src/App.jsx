@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 import Sidebar from "./components/layout/Sidebar";
@@ -10,7 +11,6 @@ import Categories from "./pages/Categories";
 import Favorites from "./pages/Favorites";
 import Outfits from "./pages/Outfits";
 import Settings from "./pages/Settings";
-import Family from "./pages/Family";
 import Account from "./pages/Account";
 
 const pages = {
@@ -20,7 +20,6 @@ const pages = {
   Favorites,
   Outfits,
   Settings,
-  Family,
   Account,
 };
 
