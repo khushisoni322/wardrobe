@@ -8,7 +8,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import { familyAPI, clothingAPI } from "../lib/api";
+import { clothingAPI } from "../lib/api";
 
 const CATEGORY_ORDER = [
   "Tops",
@@ -157,78 +157,55 @@ export default function Outfits({ user }) {
   /*
     Load current family's wardrobe.
   */
-  useEffect(() => {
-    let cancelled = false;
+  /*
+  Load current user's personal wardrobe.
+*/
+useEffect(() => {
+  let cancelled = false;
 
-    async function loadWardrobe() {
-      try {
-        setLoading(true);
-        setError("");
+  async function loadWardrobe() {
+    try {
+      setLoading(true);
+      setError("");
 
-        const familyResult = await familyAPI.list();
+      const clothingResult = await clothingAPI.listMine();
 
-        const families = Array.isArray(familyResult)
-          ? familyResult
-          : familyResult?.families ||
-            familyResult?.data ||
-            [];
+      const wardrobe = Array.isArray(clothingResult)
+        ? clothingResult
+        : clothingResult?.clothes ||
+          clothingResult?.items ||
+          clothingResult?.data ||
+          [];
 
-        const family =
-          families.find(
-            (item) =>
-              item?.isDefault ||
-              item?.default ||
-              item?.ownerId === user?.id
-          ) || families[0];
+      if (!cancelled) {
+        setClothes(wardrobe);
+      }
+    } catch (err) {
+      if (!cancelled) {
+        setClothes([]);
 
-        if (!family?.id) {
-          if (!cancelled) {
-            setClothes([]);
-          }
-
-          return;
-        }
-
-        const clothingResult = await clothingAPI.list(
-          family.id
+        setError(
+          err?.message || "Unable to load your wardrobe."
         );
-
-        const wardrobe =
-          Array.isArray(clothingResult)
-            ? clothingResult
-            : clothingResult?.clothes ||
-              clothingResult?.items ||
-              clothingResult?.data ||
-              [];
-
-        if (!cancelled) {
-          setClothes(wardrobe);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err?.message ||
-              "Unable to load your wardrobe."
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false);
       }
     }
+  }
 
-    if (user) {
-      loadWardrobe();
-    } else {
-      setLoading(false);
-      setClothes([]);
-    }
+  if (user) {
+    loadWardrobe();
+  } else {
+    setLoading(false);
+    setClothes([]);
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, user?.email]);
+  return () => {
+    cancelled = true;
+  };
+}, [user?.id, user?.email]);
 
   /*
     Categories available in wardrobe.

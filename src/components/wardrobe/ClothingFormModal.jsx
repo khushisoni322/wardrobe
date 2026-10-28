@@ -348,9 +348,37 @@ export default function ClothingFormModal({
             </label>
 
             <label>
-              <span className="mb-2 block text-sm font-bold text-[#40364C]">
-                Color
-              </span>
+  <span className="mb-2 block text-sm font-bold text-[#40364C]">
+    Color
+  </span>
+
+  <select
+    name="color"
+    value={form.color}
+    onChange={handleChange}
+    disabled={saving}
+    className="h-12 w-full rounded-2xl border border-[#E5DFEB] bg-white px-4 text-sm text-[#302640] outline-none transition focus:border-[#B9A5D5] focus:ring-4 focus:ring-[#7553C9]/10 disabled:bg-[#FAF8FC]"
+  >
+    <option value="">Select color</option>
+
+    <option value="Black">Black</option>
+    <option value="White">White</option>
+    <option value="Red">Red</option>
+    <option value="Blue">Blue</option>
+    <option value="Green">Green</option>
+    <option value="Yellow">Yellow</option>
+    <option value="Pink">Pink</option>
+    <option value="Purple">Purple</option>
+    <option value="Orange">Orange</option>
+    <option value="Brown">Brown</option>
+    <option value="Grey">Grey</option>
+    <option value="Beige">Beige</option>
+    <option value="Golden">Golden</option>
+    <option value="Silver">Silver</option>
+    <option value="Multicolor">Multicolor</option>
+    <option value="Other">Other</option>
+  </select>
+</label>
 
               <input
                 name="color"
@@ -360,7 +388,7 @@ export default function ClothingFormModal({
                 disabled={saving}
                 className="h-12 w-full rounded-2xl border border-[#E5DFEB] bg-white px-4 text-sm text-[#302640] outline-none transition placeholder:text-[#AAA1B2] focus:border-[#B9A5D5] focus:ring-4 focus:ring-[#7553C9]/10 disabled:bg-[#FAF8FC]"
               />
-            </label>
+            
 
             <label className="sm:col-span-2">
               <span className="mb-2 block text-sm font-bold text-[#40364C]">

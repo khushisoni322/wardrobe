@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
@@ -50,29 +51,33 @@ function StatCard({
         />
       </div>
 
-      <p className="mt-6 text-xs font-bold text-[#948CA3]">{label}</p>
+      <p className="mt-6 text-xs font-bold text-[#948CA3]">
+        {label}
+      </p>
 
       <p className="mt-1 text-4xl font-extrabold tracking-tight text-[#302640]">
         {value}
       </p>
 
-      <p className="mt-1 text-xs text-[#A29AAA]">{description}</p>
+      <p className="mt-1 text-xs text-[#A29AAA]">
+        {description}
+      </p>
     </button>
   );
 }
 
 export default function Dashboard({ onNavigate, user }) {
   const {
-    activeFamilyId,
     clothes = [],
     categories = [],
-    familiesLoading,
     clothesLoading,
     error,
     createClothing,
   } = useWardrobe();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   const totalPieces = clothes.length;
 
@@ -81,15 +86,16 @@ export default function Dashboard({ onNavigate, user }) {
       clothes
         .map((item) => item.category?.trim())
         .filter(Boolean)
-        .map((category) => category.toLowerCase()),
+        .map((category) => category.toLowerCase())
     );
 
     return unique.size;
   }, [clothes]);
 
   const favoriteCount = useMemo(
-    () => clothes.filter((item) => Boolean(item.favorite)).length,
-    [clothes],
+    () =>
+      clothes.filter((item) => Boolean(item.favorite)).length,
+    [clothes]
   );
 
   const styleMomentCount = useMemo(() => {
@@ -97,7 +103,7 @@ export default function Dashboard({ onNavigate, user }) {
       clothes
         .map((item) => item.occasion?.trim())
         .filter(Boolean)
-        .map((occasion) => occasion.toLowerCase()),
+        .map((occasion) => occasion.toLowerCase())
     );
 
     return unique.size;
@@ -109,22 +115,36 @@ export default function Dashboard({ onNavigate, user }) {
       : FALLBACK_CATEGORIES;
 
   const displayName =
-    user?.name?.trim()?.split(" ")[0] ||
-    user?.name?.trim() ||
-    "lovely";
+    user?.name?.trim()?.split(" ")[0] || "lovely";
 
+  // Both dashboard buttons open the same clothing modal.
   function openAddClothing() {
-    if (!activeFamilyId) {
-      onNavigate?.("Family");
-      return;
-    }
-
+    setModalError("");
     setModalOpen(true);
   }
 
-  async function handleCreateClothing(data) {
-    await createClothing(data);
+  function closeAddClothing() {
+    if (saving) return;
+
     setModalOpen(false);
+    setModalError("");
+  }
+
+  async function handleCreateClothing(data) {
+    try {
+      setSaving(true);
+      setModalError("");
+
+      await createClothing(data);
+
+      setModalOpen(false);
+    } catch (err) {
+      setModalError(
+        err?.message || "Unable to add clothing. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -173,8 +193,8 @@ export default function Dashboard({ onNavigate, user }) {
           </h2>
 
           <p className="mt-5 max-w-xl text-sm leading-7 text-[#887C97] sm:text-base">
-            Every piece has a place. Every outfit tells your story. Let's make
-            getting dressed your favorite part of the day.
+            Every piece has a place. Every outfit tells your story.
+            Let's make getting dressed your favorite part of the day.
           </p>
 
           <button
@@ -189,6 +209,7 @@ export default function Dashboard({ onNavigate, user }) {
         </div>
 
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[20px] border-white/50" />
+
         <div className="pointer-events-none absolute -bottom-24 right-20 h-64 w-64 rounded-full border border-[#DCC8F5]/70" />
       </div>
 
@@ -199,6 +220,7 @@ export default function Dashboard({ onNavigate, user }) {
             <h2 className="text-xl font-extrabold text-[#302640] sm:text-2xl">
               Your wardrobe at a glance
             </h2>
+
             <p className="mt-1 text-sm text-[#948CA3]">
               Little details that make life easier.
             </p>
@@ -220,9 +242,7 @@ export default function Dashboard({ onNavigate, user }) {
           <StatCard
             icon={Shirt}
             label="Total pieces"
-            value={
-              familiesLoading || clothesLoading ? "…" : totalPieces
-            }
+            value={clothesLoading ? "…" : totalPieces}
             description="Across your wardrobe"
             iconClass="bg-[#EEE3FF] text-[#7553C9]"
             onClick={() => onNavigate?.("My Wardrobe")}
@@ -231,9 +251,7 @@ export default function Dashboard({ onNavigate, user }) {
           <StatCard
             icon={Layers3}
             label="Categories"
-            value={
-              familiesLoading || clothesLoading ? "…" : categoryCount
-            }
+            value={clothesLoading ? "…" : categoryCount}
             description="Your style collection"
             iconClass="bg-[#FFF0DD] text-[#D28A42]"
             onClick={() => onNavigate?.("Categories")}
@@ -242,9 +260,7 @@ export default function Dashboard({ onNavigate, user }) {
           <StatCard
             icon={Heart}
             label="Favorites"
-            value={
-              familiesLoading || clothesLoading ? "…" : favoriteCount
-            }
+            value={clothesLoading ? "…" : favoriteCount}
             description="Pieces you love most"
             iconClass="bg-[#FBE3EE] text-[#D46E9A]"
             onClick={() => onNavigate?.("Favorites")}
@@ -253,9 +269,7 @@ export default function Dashboard({ onNavigate, user }) {
           <StatCard
             icon={Sparkles}
             label="Style moments"
-            value={
-              familiesLoading || clothesLoading ? "…" : styleMomentCount
-            }
+            value={clothesLoading ? "…" : styleMomentCount}
             description="Different occasions"
             iconClass="bg-[#E1F5EA] text-[#55A879]"
             onClick={() => onNavigate?.("Outfits")}
@@ -290,14 +304,32 @@ export default function Dashboard({ onNavigate, user }) {
         </div>
       )}
 
-      {/* Real clothing upload modal */}
+      {/* Add clothing modal */}
       <ClothingFormModal
         open={modalOpen}
         item={null}
         categories={displayCategories}
-        onClose={() => setModalOpen(false)}
+        onClose={closeAddClothing}
         onSubmit={handleCreateClothing}
       />
+
+      {/* Modal submission error */}
+      {modalError && (
+        <div
+          role="alert"
+          className="fixed bottom-5 right-5 z-[150] max-w-sm rounded-2xl border border-[#F2D6DF] bg-white px-5 py-4 text-sm font-semibold text-[#B46A88] shadow-xl"
+        >
+          {modalError}
+
+          <button
+            type="button"
+            onClick={() => setModalError("")}
+            className="ml-3 font-extrabold underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </section>
   );
 }

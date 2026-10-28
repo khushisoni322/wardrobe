@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -18,13 +19,8 @@ const ALL_CATEGORY = "All";
 
 export default function MyWardrobe() {
   const {
-    families,
-    activeFamily,
-    activeFamilyId,
-    setActiveFamilyId,
     clothes,
     categories,
-    familiesLoading,
     clothesLoading,
     error,
     reloadClothes,
@@ -42,12 +38,11 @@ export default function MyWardrobe() {
 
   const [busyId, setBusyId] = useState("");
 
-  // --------------------------------------------------
   // Restore category from Categories page
-  // --------------------------------------------------
-
   useEffect(() => {
-    const savedCategory = sessionStorage.getItem("wardrobe-category");
+    const savedCategory = sessionStorage.getItem(
+      "wardrobe-category"
+    );
 
     if (savedCategory) {
       setCategory(savedCategory);
@@ -55,12 +50,11 @@ export default function MyWardrobe() {
     }
   }, []);
 
-  // --------------------------------------------------
   // Global search from Topbar
-  // --------------------------------------------------
-
   useEffect(() => {
-    const savedSearch = sessionStorage.getItem("wardrobe-search");
+    const savedSearch = sessionStorage.getItem(
+      "wardrobe-search"
+    );
 
     if (savedSearch !== null) {
       setSearch(savedSearch);
@@ -72,8 +66,6 @@ export default function MyWardrobe() {
 
       setSearch(String(value));
 
-      // If user searched from another page,
-      // the search should always show all categories.
       if (String(value).trim()) {
         setCategory(ALL_CATEGORY);
       }
@@ -92,19 +84,19 @@ export default function MyWardrobe() {
     };
   }, []);
 
-  // --------------------------------------------------
   // Filter clothes
-  // --------------------------------------------------
-
   const visibleClothes = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     return clothes.filter((item) => {
-      const itemCategory = String(item?.category || "").trim();
+      const itemCategory = String(
+        item?.category || ""
+      ).trim();
 
       const matchesCategory =
         category === ALL_CATEGORY ||
-        itemCategory.toLowerCase() === category.toLowerCase();
+        itemCategory.toLowerCase() ===
+          category.toLowerCase();
 
       if (!matchesCategory) {
         return false;
@@ -119,21 +111,17 @@ export default function MyWardrobe() {
         item?.category,
         item?.color,
         item?.occasion,
-        item?.owner?.name,
       ];
 
       return searchableValues
         .filter(Boolean)
-        .some((value) =>
+        .some((value =>
           String(value).toLowerCase().includes(query)
-        );
+        ));
     });
   }, [clothes, search, category]);
 
-  // --------------------------------------------------
   // Stats
-  // --------------------------------------------------
-
   const favoriteCount = clothes.filter(
     (item) => Boolean(item?.favorite)
   ).length;
@@ -144,47 +132,31 @@ export default function MyWardrobe() {
       .filter(Boolean)
   ).size;
 
-  // --------------------------------------------------
   // Add
-  // --------------------------------------------------
-
   function openAdd() {
     setEditingItem(null);
     setModalOpen(true);
   }
 
-  // --------------------------------------------------
   // Edit
-  // --------------------------------------------------
-
   function openEdit(item) {
     setEditingItem(item);
     setModalOpen(true);
   }
 
-  // --------------------------------------------------
   // Close modal
-  // --------------------------------------------------
-
   function closeModal() {
     setModalOpen(false);
     setEditingItem(null);
   }
 
-  // --------------------------------------------------
   // Delete
-  // --------------------------------------------------
-
   async function handleDelete(item) {
     const confirmed = window.confirm(
       `Delete "${item?.name || "this item"}" from your wardrobe?`
     );
 
-    if (!confirmed) {
-      return;
-    }
-
-    if (!item?.id) {
+    if (!confirmed || !item?.id) {
       return;
     }
 
@@ -201,10 +173,7 @@ export default function MyWardrobe() {
     }
   }
 
-  // --------------------------------------------------
   // Favorite
-  // --------------------------------------------------
-
   async function handleFavorite(item) {
     if (!item?.id) {
       return;
@@ -223,10 +192,7 @@ export default function MyWardrobe() {
     }
   }
 
-  // --------------------------------------------------
   // Submit add / edit
-  // --------------------------------------------------
-
   async function handleSubmit(data) {
     if (editingItem?.id) {
       await updateClothing(editingItem.id, data);
@@ -235,10 +201,7 @@ export default function MyWardrobe() {
     }
   }
 
-  // --------------------------------------------------
   // Clear search + category
-  // --------------------------------------------------
-
   function showEverything() {
     setSearch("");
     setCategory(ALL_CATEGORY);
@@ -247,60 +210,9 @@ export default function MyWardrobe() {
     sessionStorage.removeItem("wardrobe-category");
   }
 
-  // --------------------------------------------------
-  // Loading families
-  // --------------------------------------------------
-
-  if (familiesLoading) {
-    return (
-      <div className="grid min-h-[60vh] place-items-center">
-        <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-[#665A72] shadow-sm">
-          <Loader2
-            size={18}
-            className="animate-spin text-[#7553C9]"
-          />
-
-          Loading your wardrobe...
-        </div>
-      </div>
-    );
-  }
-
-  // --------------------------------------------------
-  // No family
-  // --------------------------------------------------
-
-  if (!activeFamily && families.length === 0) {
-    return (
-      <section className="rounded-[2rem] border border-[#EEEBF3] bg-white p-8 shadow-sm sm:p-12">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[#EEE6FF] text-[#7553C9]">
-          <Shirt size={29} />
-        </div>
-
-        <h1 className="mt-6 text-2xl font-extrabold text-[#302640] sm:text-3xl">
-          Your digital wardrobe is ready.
-        </h1>
-
-        <p className="mt-3 max-w-xl text-sm leading-6 text-[#8E8498]">
-          Create a family first, then you can start photographing
-          your clothes and keeping your whole wardrobe here.
-        </p>
-
-        {error && (
-          <div className="mt-6 rounded-2xl bg-[#FFF5F7] px-4 py-3 text-sm text-[#A85572]">
-            {error}
-          </div>
-        )}
-      </section>
-    );
-  }
-
   return (
     <section className="space-y-6">
-      {/* ------------------------------------------------
-          HEADER
-      ------------------------------------------------ */}
-
+      {/* HEADER */}
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#F1EBFA] px-3 py-1.5 text-[11px] font-bold text-[#7553C9]">
@@ -319,13 +231,11 @@ export default function MyWardrobe() {
         </div>
 
         {/* Stats */}
-
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <div className="rounded-2xl border border-[#EEEBF3] bg-white px-4 py-3 text-center shadow-sm">
             <p className="text-xl font-extrabold text-[#302640]">
               {clothes.length}
             </p>
-
             <p className="mt-0.5 text-[10px] font-semibold text-[#948CA3]">
               Pieces
             </p>
@@ -335,7 +245,6 @@ export default function MyWardrobe() {
             <p className="text-xl font-extrabold text-[#D46E9A]">
               {favoriteCount}
             </p>
-
             <p className="mt-0.5 text-[10px] font-semibold text-[#948CA3]">
               Favorites
             </p>
@@ -345,7 +254,6 @@ export default function MyWardrobe() {
             <p className="text-xl font-extrabold text-[#7553C9]">
               {categoryCount}
             </p>
-
             <p className="mt-0.5 text-[10px] font-semibold text-[#948CA3]">
               Categories
             </p>
@@ -353,14 +261,8 @@ export default function MyWardrobe() {
         </div>
       </div>
 
-      {/* ------------------------------------------------
-          TOOLBAR
-      ------------------------------------------------ */}
-
+      {/* TOOLBAR */}
       <WardrobeToolbar
-        families={families}
-        activeFamilyId={activeFamilyId}
-        onFamilyChange={setActiveFamilyId}
         search={search}
         onSearchChange={setSearch}
         category={category}
@@ -369,12 +271,9 @@ export default function MyWardrobe() {
         onAdd={openAdd}
       />
 
-      {/* ------------------------------------------------
-          ERROR
-      ------------------------------------------------ */}
-
+      {/* ERROR */}
       {error && (
-        <div className="flex items-start gap-3 rounded-2xl border border-[#F0D8E2] bg-[#FFF7F9] px-4 py-3 text-sm text-[#A85572]">
+        <div className="flex items-start gap-3 rounded-2xl border border-[#F0D8E2] bg-[#FFF7F9] px-4 py-3 text-sm text-[#A85572">
           <CloudOff
             size={18}
             className="mt-0.5 shrink-0"
@@ -384,10 +283,7 @@ export default function MyWardrobe() {
             <p className="font-bold">
               Something went wrong
             </p>
-
-            <p className="mt-1">
-              {error}
-            </p>
+            <p className="mt-1">{error}</p>
           </div>
 
           <button
@@ -401,36 +297,7 @@ export default function MyWardrobe() {
         </div>
       )}
 
-      {/* ------------------------------------------------
-          FAMILY LABEL
-      ------------------------------------------------ */}
-
-      {activeFamily && (
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold text-[#958A9E]">
-            Showing{" "}
-            <span className="font-extrabold text-[#5C5066]">
-              {activeFamily.name}
-            </span>
-            's wardrobe
-          </p>
-
-          {category !== ALL_CATEGORY && (
-            <button
-              type="button"
-              onClick={() => setCategory(ALL_CATEGORY)}
-              className="text-xs font-bold text-[#7553C9] hover:underline"
-            >
-              Clear category
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ------------------------------------------------
-          CLOTHES
-      ------------------------------------------------ */}
-
+      {/* CLOTHES */}
       {clothesLoading ? (
         <div className="grid place-items-center rounded-3xl border border-[#EEEBF3] bg-white py-20">
           <div className="flex items-center gap-3 text-sm font-semibold text-[#786D82]">
@@ -438,14 +305,11 @@ export default function MyWardrobe() {
               size={18}
               className="animate-spin text-[#7553C9]"
             />
-
             Loading clothes...
           </div>
         </div>
       ) : visibleClothes.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
-          {/* Existing clothing */}
-
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
           {visibleClothes.map((item) => (
             <ClothingCard
               key={item.id}
@@ -457,20 +321,14 @@ export default function MyWardrobe() {
             />
           ))}
 
-          {/* ------------------------------------------------
-              ADD MORE CARD
-          ------------------------------------------------ */}
-
+          {/* ADD MORE CARD */}
           <button
             type="button"
             onClick={openAdd}
             className="group flex min-h-[420px] w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#DED3EF] bg-white px-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-[#7650C9] hover:bg-[#FBF8FF] hover:shadow-lg hover:shadow-[#7650C9]/10"
           >
             <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#F0E7FF] text-[#7650C9] transition-transform duration-200 group-hover:scale-110">
-              <Plus
-                size={30}
-                strokeWidth={2}
-              />
+              <Plus size={30} strokeWidth={2} />
             </span>
 
             <span className="mt-5 text-base font-extrabold text-[#302640]">
@@ -486,10 +344,7 @@ export default function MyWardrobe() {
           </button>
         </div>
       ) : (
-        /* ------------------------------------------------
-           EMPTY / NO RESULTS
-        ------------------------------------------------ */
-
+        /* EMPTY / NO RESULTS */
         <div className="rounded-[2rem] border border-dashed border-[#DCD3E5] bg-white px-6 py-16 text-center">
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#F0EAF8] text-[#7553C9]">
             {search || category !== ALL_CATEGORY ? (
@@ -516,8 +371,6 @@ export default function MyWardrobe() {
           </p>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            {/* ADD MORE */}
-
             <button
               type="button"
               onClick={openAdd}
@@ -528,8 +381,6 @@ export default function MyWardrobe() {
                 ? `Add ${category}`
                 : "Add More"}
             </button>
-
-            {/* SHOW EVERYTHING */}
 
             {(search || category !== ALL_CATEGORY) && (
               <button
@@ -544,10 +395,7 @@ export default function MyWardrobe() {
         </div>
       )}
 
-      {/* ------------------------------------------------
-          ADD / EDIT MODAL
-      ------------------------------------------------ */}
-
+      {/* ADD / EDIT MODAL */}
       <ClothingFormModal
         open={modalOpen}
         item={editingItem}
@@ -559,10 +407,7 @@ export default function MyWardrobe() {
   );
 }
 
-/* ----------------------------------------------------
-   Search Icon
----------------------------------------------------- */
-
+// Search Icon
 function SearchIcon() {
   return (
     <svg
@@ -573,12 +418,7 @@ function SearchIcon() {
       className="h-7 w-7"
       aria-hidden="true"
     >
-      <circle
-        cx="11"
-        cy="11"
-        r="6.5"
-      />
-
+      <circle cx="11" cy="11" r="6.5" />
       <path d="m16 16 4 4" />
     </svg>
   );
